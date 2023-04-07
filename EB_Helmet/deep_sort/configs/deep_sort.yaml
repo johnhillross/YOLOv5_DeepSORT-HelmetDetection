@@ -1,0 +1,9 @@
+DEEPSORT:
+  REID_CKPT: "deep_sort/deep_sort/deep/checkpoint/ckpt.t7"
+  MAX_DIST: 0.2
+  MIN_CONFIDENCE: 0.8
+  NMS_MAX_OVERLAP: 0.5
+  MAX_IOU_DISTANCE: 0.7
+  MAX_AGE: 30
+  N_INIT: 3
+  NN_BUDGET: 50
