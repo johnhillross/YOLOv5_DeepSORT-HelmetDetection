@@ -1,0 +1,9 @@
+# Helmet
+YOLOV5:
+  WEIGHTS: "weights/helmet-last.pt"  # nargs='+', type=str, help='model.pt path(s)'
+  IMG_SIZE: 320 # type=int, help='inference size (pixels)'
+  CONF_THRES: 0.8  # type=float, help='object confidence threshold'
+  IOU_THRES: 0.5 # type=float, help='IOU threshold for NMS'
+  DEVICE: "" # help='cuda device, i.e. 0 or 0,1,2,3 or cpu'
+  AGNOSTIC_NMS: False # help='class-agnostic NMS'
+  AUGMENT: False  # help='augmented inference'
