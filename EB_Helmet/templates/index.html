@@ -1,0 +1,812 @@
+<!doctype html>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <title>EB_Helmet</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+
+    <!-- load css -->
+    <link rel="stylesheet" href="../static/css/EB_Helmet.css">
+
+  </head>
+  <body>
+    <!-- load js -->
+    <script src="../static/js/jquery-3.6.0.js""></script>
+    <script src="../static/js/socket.io.js"></script>
+    <script src="../static/js/echarts.min.js"></script>
+    <!-- 用高德地图Web端KEY不是Web服务端KEY -->
+    <script src="https://webapi.amap.com/maps?v=1.4.15&key=1325fc4a600217921f08d5a461b7993b"></script>
+    <script src="../static/js/echarts-extension-amap.min.js"></script>
+
+    <!-- background -->
+    <canvas id="canvas" class="canvas"></canvas>
+
+    <!-- header -->
+    <div class="header">
+      <h1>电动自行车头盔佩戴检测系统</h1>
+    </div>
+
+    <!-- map -->
+    <div class="map">
+      <div id="myMap"></div>
+    </div>
+
+    <!-- left -->
+    <div class="left">
+
+      <div class="container">
+        <div class="label" style="width: 100px;">
+          <h3>当日数据</h3>
+        </div>
+        <div class="content" style="padding-bottom: 10px;">
+          <div class="box" style="margin: auto;">
+            <div id="myPie1" style="width: 120px; height: 120px;"></div>
+            <div style="color: white; font-size: 15px; text-align: center;">下行</div>
+          </div>
+          <div class="box" style="margin: auto;">
+            <div id="myPie2" style="width: 120px; height: 120px;"></div>
+            <div style="color: white; font-size: 15px; text-align: center;">未佩戴头盔</div>
+          </div>
+          <div class="box" style="margin: auto;">
+            <div id="myPie3" style="width: 120px; height: 120px;"></div>
+            <div style="color: white; font-size: 15px; text-align: center;">机动车道行驶</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="label" style="width: 250px;">
+          <h3>电动自行车驾驶员详细信息</h3>
+        </div>
+        <div class="content">
+          <div class="box" style="width: 140px; height: 200px; margin-left: 10px; margin-right: 20px">
+            <img id="catch_camera" src="../static/picture/catch.png" style="height: 200px; width: auto;">
+          </div>
+          <div class="box" style="margin-left: 0px;">
+            <div class="attribute">编号</div>
+            <div class="attribute">行驶方向</div>
+            <div class="attribute">头盔佩戴</div>
+            <div class="attribute">行驶车道</div>
+            <div class="attribute">捕获时间</div>
+          </div>
+          <div class="box" style="margin-left: 0px;">
+            <div id="catch_identitie" class="value">Null</div>
+            <div id="catch_direction" class="value">Null</div>
+            <div id="catch_helmet" class="value">Null</div>
+            <div id="catch_lane" class="value">Null</div>
+            <div id="catch_time" class="value">Null</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="content">
+          <table class="table-box">
+            <thead>
+              <tr>
+                <th>监控编号</th>
+                <th>行驶方向</th>
+                <th>头盔佩戴</th>
+                <th>行驶车道</th>
+                <th>时间</th>
+              </tr>
+            </thead>
+            <tbody id="tbody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- right -->
+    <div class="right">
+      <div class="container">
+        <div class="label" style="margin-left: 0px; margin-bottom: 10px; width: 200px;">
+          <h3>实时监控摄像</h3>
+        </div>
+        <div id="small_window" class="content" style="margin-left: 0px;">
+          <img id="camera" src="../static/picture/disconnect.png" style="width: 450px; height: auto;">
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="label" style="margin-left: 0px; margin-bottom: 10px; width: 200px;">
+          <h3>小时级数据</h3>
+        </div>
+        <div class="content" style="margin-left: 0px;">
+          <div id="myLine" style="width: 450px; height: 265px;"></div>
+        </div>
+        <div class="content" style="margin-left: 0px;">
+          <div class="box" style="color: white; text-align: center;">
+            <p id="time" style="margin: 0px; font-size: 30px; font-weight: 900;">Null</p>
+            <p id="date" style="margin: 0px; font-size: 10px;">Null</p>
+          </div>
+          <div class="box" style="margin: 7px; margin-left: 0px; margin-right: 10px; padding-left: 20px; border-left: 2px solid white;">
+            <img id="weather_image" src="../static/picture/weather/weather_img01.png" onerror="javascript:this.src='../static/picture/weather/weather_img01.png'">
+          </div>
+          <div class="box" style="margin-left: 0px; color: white; text-align: left;">
+            <p id="weather" style="margin: 0px; font-size: 20px; font-weight: 900;">Null</p>
+            <p id="temperature" style="margin: 0px;">Null</p>
+            <p id="location" style="margin: 0px;">Null</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- center -->
+    <div class="center">
+      <!-- counter -->
+      <div class="container">
+        <div class="content" style="margin-left: 25px; border: none; box-shadow: none; background: none;">
+          <div class="box" style="width: 33%;">
+            <div class="row">
+              <div class="sign"></div>
+              <h3>当日流量</h3>
+            </div>
+            <div class="row" style="text-align: center;">
+              <h1 id="count_total">0</h1>
+            </div>
+          </div>
+          <div class="box" style="width: 33%;">
+            <div class="row">
+              <div class="sign"></div>
+              <h3>未佩戴头盔</h3>
+            </div>
+            <div class="row" style="text-align: center;">
+              <h1 id="count_helmet">0</h1>
+            </div>
+          </div>
+          <div class="box" style="width: 33%;">
+            <div class="row">
+              <div class="sign"></div>
+              <h3>机动车道行驶</h3>
+            </div>
+            <div class="row" style="text-align: center;">
+              <h1 id="count_lane">0</h1>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+
+      // time
+      function time() {
+        var weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+        var now = new Date();
+        var year = now.getFullYear();
+        var month = (now.getMonth()+1)<10?'0'+(now.getMonth()+1):(now.getMonth()+1);
+        var day = now.getDate()<10?'0'+now.getDate():now.getDate();
+        var week = weekdays[now.getDay()];
+
+        var hour= now.getHours()<10?'0'+now.getHours():now.getHours();
+        var minute= now.getMinutes()<10?'0'+now.getMinutes():now.getMinutes();
+        var second= now.getSeconds()<10?'0'+now.getSeconds():now.getSeconds();
+
+        if (minute == '00' && second == '00') {
+          socket.emit('count_past', device)
+        }
+
+        socket.emit('count_current', device)
+
+        document.getElementById("time").innerText = hour+':'+minute+':'+second
+        document.getElementById("date").innerText = year+'/'+month+'/'+day+' '+week
+
+        setTimeout(time,1000);
+      }
+
+      // onload function
+      window.onload=function(){
+        time()
+      }
+
+      // set device
+      var device = 'NVR-7106-3'
+
+      // init socketio
+      var socket = null
+      if (!socket) {
+        socket = io.connect(location.href);
+      }
+
+      // catch
+      socket.on('catch:' + device, function(data) {
+        document.getElementById("catch_camera").src = data.image
+        document.getElementById("catch_identitie").innerText = data.identitie
+        document.getElementById("catch_direction").innerText = data.direction==0?'上行':'下行'
+        document.getElementById("catch_helmet").innerText = data.helmet==0?'是':data.helmet==1?'否':'未知'
+        document.getElementById("catch_lane").innerText = data.lane==0?'机动车道':'非机动车道'
+        document.getElementById("catch_time").innerText = data.time.split(" ")[1]
+
+        var html = ``
+        html = `<tr>
+                  <td>${data.identitie}</td>
+                  <td>${data.direction==0?'上行':'下行'}</td>
+                  <td>${data.helmet==0?'是':data.helmet==1?'否':'未知'}</td>
+                  <td>${data.lane==0?'机动车道':'非机动车道'}</td>
+                  <td>${data.time.split(" ")[1]}</td>
+                </tr>`
+        document.getElementById("tbody").innerHTML += html
+        document.getElementById("tbody").scrollTop = document.getElementById("tbody").scrollHeight
+      });
+
+      // camera
+      document.getElementById("camera").src = "{{url_for('stream', device='device')}}".replace("device", device)
+
+      // count old data
+      var Up = 0
+      var Down = 0
+      var With_Helmet = 0
+      var Without_Helmet = 0
+      var Miss = 0
+      var Motor_Lane = 0
+      var Bicycle_Lane = 0
+
+      var Label = ['未佩戴头盔', '机动车道行驶']
+      var Time = ['12 am', '1 am', '2 am', '3 am', '4 am', '5 am', '6 am', '7 am', '8 am', '9 am', '10 am', '11 am', '12 pm', '1 pm', '2 pm', '3 pm', '4 pm', '5 pm', '6 pm', '7 pm', '8 pm', '9 pm', '10 pm', '11 pm']
+      var Helmet = []
+      var Lane = []
+
+      socket.emit('count_past', device)
+      socket.on('past:' + device, function(data) {
+        Up = 0
+        Down = 0
+        With_Helmet = 0
+        Without_Helmet = 0
+        Miss = 0
+        Motor_Lane = 0
+        Bicycle_Lane = 0
+        Helmet = []
+        Lane = []
+        for (var i = 0; i < Object.keys(data).length; i++) {
+          Up = Up + data[i].Up
+          Down = Down + data[i].Down
+          With_Helmet = With_Helmet + data[i].With_Helmet
+          Without_Helmet = Without_Helmet + data[i].Without_Helmet
+          Miss = Miss + data[i].Miss
+          Motor_Lane = Motor_Lane + data[i].Motor_Lane
+          Bicycle_Lane = Bicycle_Lane + data[i].Bicycle_Lane
+
+          Helmet.push(data[i].Without_Helmet + data[i].Miss)
+          Lane.push(data[i].Motor_Lane)
+        }
+        Helmet.push(0)
+        Lane.push(0)
+
+        document.getElementById("count_total").innerText = Up + Down
+        document.getElementById("count_helmet").innerText = Without_Helmet + Miss
+        document.getElementById("count_lane").innerText = Motor_Lane
+      });
+
+      // init echarts
+      var myMap = echarts.init(document.getElementById('myMap'));
+
+      var myLine = echarts.init(document.getElementById('myLine'));
+
+      var myPie1 = echarts.init(document.getElementById('myPie1'));
+
+      var myPie2 = echarts.init(document.getElementById('myPie2'));
+
+      var myPie3 = echarts.init(document.getElementById('myPie3'));
+
+      //init myMap
+      socket.emit('lonlat', device)
+      socket.on('lonlat:' + device, function(data) {
+        myMap.setOption({
+          amap: {
+            resizeEnable: true,
+            roam: true,
+            center: [data.longitude, data.latitude],
+            zoom: 16,
+            // 自定义高德地图样式
+            // mapStyle: 'amap://styles/6eb213997d6cceaa45740a36b1b8432a',
+            // 使用高德地图官方样式
+            mapStyle: 'amap://styles/grey',
+            showIndoorMap: false,
+          },
+          series: [{
+            type: 'scatter',
+            coordinateSystem: 'amap',
+            data: [data.longitude, data.latitude, 1],
+          }]
+        });
+        var marker = new AMap.Marker({
+          position: new AMap.LngLat(data.longitude, data.latitude),
+          icon: '../static/picture/marker.png',
+          title: 'Device: ' + device + '\n' + 'LonLat: [' + data.longitude + ', ' + data.latitude + ']'
+        });
+        marker.setAnimation('AMAP_ANIMATION_BOUNCE')
+
+        var trafficLayer = new AMap.TileLayer.Traffic({
+          zIndex: 10
+        });
+
+        var isVisible = true;
+        function toggle() {
+            if (isVisible) {
+                trafficLayer.hide();
+                isVisible = false;
+            } else {
+                trafficLayer.show();
+                isVisible = true;
+            }
+        }
+        var amap = myMap.getModel().getComponent('amap').getAMap();
+        trafficLayer.setMap(amap)
+        amap.add(marker);
+
+        // get weather
+        AMap.plugin(['AMap.Geocoder', 'AMap.Weather'], function() {
+
+          // lonlat to adcode
+          var adcode = ''
+          var geocoder = new AMap.Geocoder();
+          geocoder.getAddress([data.longitude, data.latitude], function(status, result) {
+            if (status === 'complete' && result.info === 'OK') {
+              adcode = result.regeocode.addressComponent.adcode
+
+              // adcode search weather
+              var weather = new AMap.Weather();
+              weather.getLive(adcode, function(err, data) {
+                document.getElementById("weather_image").src = "../static/picture/weather/" + data.weather + ".png"
+                document.getElementById("weather").innerText = data.weather
+                document.getElementById("temperature").innerText = data.temperature + '℃'
+                document.getElementById("location").innerText = data.province + '省' + data.city
+              });
+            }
+          })
+        });
+      })
+
+      // init myLine
+      myLine.setOption({
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            lineStyle: {
+              color: '#dddc6b'
+            }
+          }
+        },
+        legend: {
+          top:'0%',
+          data: Label,
+          textStyle: {
+            color: 'rgba(255,255,255,.5)',
+            fontSize:'12',
+          }
+        },
+        grid: {
+          left: '10',
+          top: '30',
+          right: '10',
+          bottom: '10',
+          containLabel: true
+        },
+        xAxis: [{
+          type: 'category',
+          boundaryGap: false,
+          axisLabel:  {
+            textStyle: {
+              color: "rgba(255,255,255,.6)",
+              fontSize:12,
+            },
+          },
+          axisLine: {
+            lineStyle: {
+              color: 'rgba(255,255,255,.2)'
+            }
+          },
+          data: Time
+        },
+        {
+        axisPointer: {show: false},
+        axisLine: {show: false},
+        position: 'bottom',
+        offset: 20,
+        }],
+        yAxis: [{
+          type: 'value',
+          axisTick: {show: false},
+          axisLine: {
+            lineStyle: {
+              color: 'rgba(255,255,255,.1)'
+            }
+          },
+          axisLabel:  {
+            textStyle: {
+              color: "rgba(255,255,255,.6)",
+              fontSize:12,
+            },
+          },
+          splitLine: {
+            lineStyle: {
+              color: 'rgba(255,255,255,.1)'
+            }
+          }
+        }],
+        series: [
+        {
+          name: Label[0],
+          data: Helmet,
+          type: 'line',
+          smooth: true,
+          symbol: 'circle',
+          symbolSize: 5,
+          showSymbol: false,
+          lineStyle: {
+            normal: {
+              color: '#0184d5',
+              width: 2
+            }
+          },
+          areaStyle: {
+            normal: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                offset: 0,
+                color: 'rgba(1, 132, 213, 0.4)'
+              }, {
+                offset: 0.8,
+                color: 'rgba(1, 132, 213, 0.1)'
+              }], false),
+              shadowColor: 'rgba(0, 0, 0, 0.1)',
+            }
+          },
+          itemStyle: {
+            normal: {
+              color: '#0184d5',
+              borderColor: 'rgba(221, 220, 107, .1)',
+              borderWidth: 12
+            }
+          },
+        },
+        {
+          name: Label[1],
+          data: Lane,
+          type: 'line',
+          smooth: true,
+          symbol: 'circle',
+          symbolSize: 5,
+          showSymbol: false,
+          lineStyle: {
+            normal: {
+              color: '#00d887',
+              width: 2
+            }
+          },
+          areaStyle: {
+            normal: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                offset: 0,
+                color: 'rgba(0, 216, 135, 0.4)'
+              }, {
+                offset: 0.8,
+                color: 'rgba(0, 216, 135, 0.1)'
+              }], false),
+              shadowColor: 'rgba(0, 0, 0, 0.1)',
+            }
+          },
+          itemStyle: {
+            normal: {
+              color: '#00d887',
+              borderColor: 'rgba(221, 220, 107, .1)',
+              borderWidth: 12
+            }
+          },
+        }]
+      });
+
+      //init myPie1
+      myPie1.setOption({
+        series: [{
+          type: 'pie',
+          radius: ['60%', '80%'],
+          color: '#0088cc',
+          label: {
+              normal: {
+                position: 'center'
+              }
+          },
+          data: [{
+            value: Down,
+            name: '下行总数',
+            label: {
+              normal: {
+                formatter: Down + '',
+                textStyle: {
+                  color: '#fff',
+                  fontSize: 20,
+                }
+              }
+            }
+          },
+          {
+            value: Up,
+            name: '上行总数',
+            label: {
+              normal: {
+                formatter: function (params) {
+                  return '占比' + Math.round(Down / (Down + Up) * 100) + '%'
+                },
+                textStyle: {
+                  color: '#fff',
+                  fontSize: 12
+                }
+              }
+            },
+            itemStyle: {
+              normal: {
+                color: 'rgba(255,255,255,.2)'
+              },
+              emphasis: {
+                color: '#fff'
+              }
+            }
+          }]
+        }]
+      });
+
+      //init myPie2
+      myPie2.setOption({
+        series: [{
+          type: 'pie',
+          radius: ['60%', '80%'],
+          color: '#fccb00',
+          label: {
+              normal: {
+                position: 'center'
+              }
+          },
+          data: [{
+            value: Without_Helmet + Miss,
+            name: '未佩戴头盔总数',
+            label: {
+              normal: {
+                formatter: Without_Helmet + Miss + '',
+                textStyle: {
+                  color: '#fff',
+                  fontSize: 20,
+                }
+              }
+            }
+          },
+          {
+            value: With_Helmet,
+            name: '佩戴头盔总数',
+            label: {
+              normal: {
+                formatter: function (params) {
+                  return '占比' + Math.round(Without_Helmet + Miss / (Without_Helmet + Miss + With_Helmet) * 100) + '%'
+                },
+                textStyle: {
+                  color: '#fff',
+                  fontSize: 12
+                }
+              }
+            },
+            itemStyle: {
+              normal: {
+                color: 'rgba(255,255,255,.2)'
+              },
+              emphasis: {
+                color: '#fff'
+              }
+            }
+          }]
+        }]
+      });
+
+      //init myPie3
+      myPie3.setOption({
+        series: [{
+          type: 'pie',
+          radius: ['60%', '80%'],
+          color: '#62b62f',
+          label: {
+              normal: {
+                position: 'center'
+              }
+          },
+          data: [{
+            value: Motor_Lane,
+            name: '机动车道行驶总数',
+            label: {
+              normal: {
+                formatter: Motor_Lane + '',
+                textStyle: {
+                  color: '#fff',
+                  fontSize: 20,
+                }
+              }
+            }
+          },
+          {
+            value: Bicycle_Lane,
+            name: '非机动车道行驶总数',
+            label: {
+              normal: {
+                formatter: function (params) {
+                  return '占比' + Math.round(Motor_Lane / (Motor_Lane + Bicycle_Lane) * 100) + '%'
+                },
+                textStyle: {
+                  color: '#fff',
+                  fontSize: 12
+                }
+              }
+            },
+            itemStyle: {
+              normal: {
+                color: 'rgba(255,255,255,.2)'
+              },
+              emphasis: {
+                color: '#fff'
+              }
+            }
+          }]
+        }]
+      });
+
+      // Real-time update data
+      socket.on('current:' + device, function(data) {
+
+        var curUp = Up + data.Up;
+        var curDown = Down + data.Down;
+        var curWith_Helmet = With_Helmet + data.With_Helmet;
+        var curWithout_Helmet = Without_Helmet + data.Without_Helmet;
+        var curMiss = Miss + data.Miss
+        var curMotor_Lane = Motor_Lane + data.Motor_Lane;
+        var curBicycle_Lane = Bicycle_Lane + data.Bicycle_Lane;
+
+        document.getElementById("count_total").innerText = curUp + curDown
+        document.getElementById("count_helmet").innerText = curWithout_Helmet + curMiss
+        document.getElementById("count_lane").innerText = curMotor_Lane
+
+        Helmet[Helmet.length-1] = data.Without_Helmet + data.Miss
+        Lane[Lane.length-1] = data.Motor_Lane
+
+        myLine.setOption({
+          series: [
+            {
+              data: Helmet
+            },
+            {
+              data: Lane
+            }
+          ]
+        });
+
+        myPie1.setOption({
+          series: [{
+            data: [
+              {
+                value: curDown,
+                label: {
+                  normal: {
+                    formatter: curDown + '',
+                    textStyle: {
+                      color: '#fff',
+                      fontSize: 20,
+                    }
+                  }
+                }
+              },
+              {
+                value: curUp,
+                label: {
+                  normal: {
+                    formatter: function (params) {
+                      return '占比' + Math.round(curDown / (curDown + curUp) * 100) + '%'
+                    },
+                    textStyle: {
+                      color: '#fff',
+                      fontSize: 12,
+                    }
+                  }
+                },
+                itemStyle: {
+                  normal: {
+                    color: 'rgba(255,255,255,.2)'
+                  },
+                  emphasis: {
+                    color: '#fff'
+                  }
+                }
+              }
+            ]
+          }]
+        });
+
+        myPie2.setOption({
+          series: [{
+            data: [
+              {
+                value: curWithout_Helmet + curMiss,
+                label: {
+                  normal: {
+                    formatter: curWithout_Helmet + curMiss + '',
+                    textStyle: {
+                      color: '#fff',
+                      fontSize: 20,
+                    }
+                  }
+                }
+              },
+              {
+                value: curWith_Helmet,
+                label: {
+                  normal: {
+                    formatter: function (params) {
+                      return '占比' + Math.round(curWithout_Helmet + curMiss/ (curWithout_Helmet + curMiss + curWith_Helmet) * 100) + '%'
+                    },
+                    textStyle: {
+                      color: '#fff',
+                      fontSize: 12,
+                    }
+                  }
+                },
+                itemStyle: {
+                  normal: {
+                    color: 'rgba(255,255,255,.2)'
+                  },
+                  emphasis: {
+                    color: '#fff'
+                  }
+                }
+              }
+            ]
+          }]
+        });
+
+        myPie3.setOption({
+          series: [{
+            data: [
+              {
+                value: curMotor_Lane,
+                label: {
+                  normal: {
+                    formatter: curMotor_Lane + '',
+                    textStyle: {
+                      color: '#fff',
+                      fontSize: 20,
+                    }
+                  }
+                }
+              },
+              {
+                value: curBicycle_Lane,
+                label: {
+                  normal: {
+                    formatter: function (params) {
+                      return '占比' + Math.round(curMotor_Lane / (curMotor_Lane + curBicycle_Lane) * 100) + '%'
+                    },
+                    textStyle: {
+                      color: '#fff',
+                      fontSize: 12,
+                    }
+                  }
+                },
+                itemStyle: {
+                  normal: {
+                    color: 'rgba(255,255,255,.2)'
+                  },
+                  emphasis: {
+                    color: '#fff'
+                  }
+                }
+              }
+            ]
+          }]
+        });
+      });
+
+    </script>
+
+    <script src="../static/js/background.js"></script>
+  </body>
+</html>
