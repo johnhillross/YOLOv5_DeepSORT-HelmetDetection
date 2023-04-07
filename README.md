@@ -1,11 +1,22 @@
-<center><font size = 10><b>基于深度学习的电动自行车头盔佩戴检测系统</b></font></center>
-<center><font size = 8>——开发环境配置说明文档</font></center>
+# 基于深度学习的电动自行车头盔佩戴检测系统——开发环境配置说明文档
 
 ---
 
-<center><font size = 5><b>目录</b></font></center>
-
-[TOC]
+- [基于深度学习的电动自行车头盔佩戴检测系统——开发环境配置说明文档](#基于深度学习的电动自行车头盔佩戴检测系统开发环境配置说明文档)
+- [1. 文档说明](#1-文档说明)
+- [2. 运行环境说明](#2-运行环境说明)
+  - [2.1 硬件配置](#21-硬件配置)
+  - [2.2 软件配置](#22-软件配置)
+  - [2.3 程序依赖库](#23-程序依赖库)
+- [3. 基本环境配置](#3-基本环境配置)
+  - [3.1 软件安装](#31-软件安装)
+    - [3.1.1 集成开发环境安装与配置](#311-集成开发环境安装与配置)
+    - [3.1.2 数据库安装与配置](#312-数据库安装与配置)
+    - [3.1.3 编程语言安装](#313-编程语言安装)
+    - [3.1.4 CUDA和cuDNN安装与配置](#314-cuda和cudnn安装与配置)
+    - [3.1.5 机器学习库安装](#315-机器学习库安装)
+  - [3.2 依赖库安装](#32-依赖库安装)
+- [4. 运行程序](#4-运行程序)
 
 ---
 
@@ -83,7 +94,7 @@
 
 （2）按如下操作安装Code Runner插件，具体版本不作要求，下载最新版本即可。
 
-![安装Code Runner插件](./pictures/Code_Runner.png)
+![安装Code Runner插件](https://github.com/johnhillross/YOLOv5-DeepSORT-HelmetDetection/blob/main/pictures/Code_Runner.png)
 
 ### 3.1.2 数据库安装与配置
 
@@ -117,7 +128,7 @@ nvcc -V
 
 执行命令后得到以下信息即安装成功
 
-![安装成功](./pictures/CUDAcuDNN.png)
+![安装成功](https://github.com/johnhillross/YOLOv5-DeepSORT-HelmetDetection/blob/main/pictures/CUDAcuDNN.png)
 
 ### 3.1.5 机器学习库安装
 
@@ -140,7 +151,7 @@ print(torch.backends.cudnn.version())
 
 执行命令后得到以下信息即安装成功
 
-![安装成功](./pictures/Pytorch.png)
+![安装成功](https://github.com/johnhillross/YOLOv5-DeepSORT-HelmetDetection/blob/main/pictures/Pytorch.png)
 
 ## 3.2 依赖库安装
 
@@ -167,10 +178,10 @@ pip install -r requirements.txt
 
 设置完成后执行程序主目录下的app.py即可运行程序，在浏览器中输入127.0.0.1:8000即可显示系统界面，系统界面如下图所示：
 
-![系统界面](./pictures/System.png)
+![系统界面](https://github.com/johnhillross/YOLOv5-DeepSORT-HelmetDetection/blob/main/pictures/System.png)
 
 在D:/#Data/Detect/目录下可见到截取下来的电动自行车驾驶员JPG格式图片，若要修改图片存储路径或图片格式，修改程序主目录下的app.py第18、19行代码即可，如下图所示。
 
-![修改存储路径或格式](./pictures/SaveDirFormat.png)
+![修改存储路径或格式](https://github.com/johnhillross/YOLOv5-DeepSORT-HelmetDetection/blob/main/pictures/SaveDirFormat.png)
 
 至此完成程序的所有环境配置和运行操作，祝学者一切顺利，若有疑问可联系邮箱johnhillross@163.com。
